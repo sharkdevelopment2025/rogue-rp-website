@@ -1,4 +1,4 @@
-import { requireStaff } from "@/lib/auth/guards";
+import { requireStaffPage } from "@/lib/auth/guards";
 import { listAuditLogs } from "@/lib/repositories/audit";
 import { formatUkDateTime } from "@/lib/utils";
 import { createMetadata } from "@/lib/metadata";
@@ -10,7 +10,7 @@ export const metadata = createMetadata({
 });
 
 export default async function AdminAuditPage() {
-  await requireStaff("settings");
+  await requireStaffPage("settings");
   const logs = await listAuditLogs();
 
   return (

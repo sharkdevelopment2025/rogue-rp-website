@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { ApplicationActions } from "@/components/admin/ApplicationActions";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { requireStaff } from "@/lib/auth/guards";
+import { requireStaffPage } from "@/lib/auth/guards";
 import { getApplication } from "@/lib/applications/client";
 import { formatUkDateTime } from "@/lib/utils";
 
@@ -11,7 +11,7 @@ export default async function AdminApplicationDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireStaff("applications");
+  await requireStaffPage("applications");
   const { id } = await params;
   const application = await getApplication(id);
   if (!application) {

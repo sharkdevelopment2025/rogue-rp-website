@@ -1,5 +1,5 @@
 import { getApplications } from "@/lib/applications/client";
-import { requireStaff } from "@/lib/auth/guards";
+import { requireStaffPage } from "@/lib/auth/guards";
 import { ApplicationCard } from "@/components/applications/ApplicationCard";
 import { createMetadata } from "@/lib/metadata";
 
@@ -10,7 +10,7 @@ export const metadata = createMetadata({
 });
 
 export default async function AdminWhitelistPage() {
-  await requireStaff("applications");
+  await requireStaffPage("applications");
   const result = await getApplications({ search: "whitelist" });
 
   return (

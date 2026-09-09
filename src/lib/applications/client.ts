@@ -99,7 +99,16 @@ export async function getApplications(query: ApplicationQuery = {}): Promise<App
     };
   }
 
-  const json = (await response.json()) as { items?: RemoteApplication[] } | RemoteApplication[];
+  let json: { items?: RemoteApplication[] } | RemoteApplication[];
+  try {
+    json = (await response.json()) as { items?: RemoteApplication[] } | RemoteApplication[];
+  } catch {
+    return {
+      configured: true,
+      items: [],
+      message: "The applications service could not be reached.",
+    };
+  }
   const items = Array.isArray(json) ? json : json.items || [];
   return {
     configured: true,

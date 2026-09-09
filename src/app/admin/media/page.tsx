@@ -1,4 +1,4 @@
-import { requireStaff } from "@/lib/auth/guards";
+import { requireStaffPage } from "@/lib/auth/guards";
 import { listAllMedia } from "@/lib/repositories/media";
 import { saveMediaAction, deleteMediaAction } from "@/app/admin/actions";
 import { Button } from "@/components/ui/Button";
@@ -11,7 +11,7 @@ export const metadata = createMetadata({
 });
 
 export default async function AdminMediaPage() {
-  await requireStaff("content");
+  await requireStaffPage("content");
   const items = await listAllMedia();
 
   return (

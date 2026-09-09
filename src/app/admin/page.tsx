@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { requireAnyStaff } from "@/lib/auth/guards";
+import { requireAnyStaffPage } from "@/lib/auth/guards";
 import { listUsers } from "@/lib/repositories/users";
 import { listNews } from "@/lib/repositories/news";
 import { listTeam } from "@/lib/repositories/team";
@@ -60,13 +60,21 @@ const cms = [
 ];
 
 export default async function AdminHomePage() {
-  const staff = await requireAnyStaff();
+  const staff = await requireAnyStaffPage();
   const [users, news, team, applications, players] = await Promise.all([
-    listUsers(),
-    listNews({ includeUnpublished: true }),
-    listTeam(),
-    getApplications(),
-    getPlayerCount(),
+    listUsers().catch(() => []),
+    listNews({ includeUnpublished: true }).catch(() => []),
+    listTeam().catch(() => []),
+    getApplications().catch(() => ({
+      configured: false,
+      items: [],
+      message: "Applications could not be loaded.",
+    })),
+    getPlayerCount().catch(() => ({
+      players: 0,
+      maxPlayers: 64,
+      health: "offline" as const,
+    })),
   ]);
 
   const pending = applications.items.filter(

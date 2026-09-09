@@ -1,4 +1,4 @@
-import { requireStaff } from "@/lib/auth/guards";
+import { requireStaffPage } from "@/lib/auth/guards";
 import { listFaq } from "@/lib/repositories/faq";
 import { deleteFaqItemAction, saveFaqItemAction } from "@/app/admin/actions";
 import { Button } from "@/components/ui/Button";
@@ -11,7 +11,7 @@ export const metadata = createMetadata({
 });
 
 export default async function AdminFaqPage() {
-  await requireStaff("content");
+  await requireStaffPage("content");
   const categories = await listFaq();
 
   return (

@@ -1,7 +1,7 @@
 import { ApplicationCard } from "@/components/applications/ApplicationCard";
 import { ApplicationActions } from "@/components/admin/ApplicationActions";
 import { Card } from "@/components/ui/Card";
-import { requireStaff } from "@/lib/auth/guards";
+import { requireStaffPage } from "@/lib/auth/guards";
 import { getApplications } from "@/lib/applications/client";
 import { createMetadata } from "@/lib/metadata";
 
@@ -16,7 +16,7 @@ export default async function AdminApplicationsPage({
 }: {
   searchParams: Promise<{ search?: string; status?: string }>;
 }) {
-  await requireStaff("applications");
+  await requireStaffPage("applications");
   const params = await searchParams;
   const result = await getApplications({
     search: params.search,

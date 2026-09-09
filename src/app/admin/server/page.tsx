@@ -1,4 +1,4 @@
-import { requireStaff } from "@/lib/auth/guards";
+import { requireStaffPage } from "@/lib/auth/guards";
 import { getServerStatus } from "@/lib/fivem/status";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -13,7 +13,7 @@ export const metadata = createMetadata({
 });
 
 export default async function AdminServerPage() {
-  await requireStaff("server");
+  await requireStaffPage("server");
   const status = await getServerStatus();
   const env = getServerEnv();
 

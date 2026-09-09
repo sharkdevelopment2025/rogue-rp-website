@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { redirect, unstable_rethrow } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { isStaffKeyUser } from "@/lib/auth/staff-access";
 import { getGuildMember, hasAnyStaffRole, resolveStaffRoles } from "@/lib/discord/roles";
@@ -8,11 +8,15 @@ import type { GuildMemberSnapshot } from "@/lib/discord/roles";
 import type { SessionUser } from "@/types";
 
 export class AuthError extends Error {
+  readonly code: "unauthenticated" | "suspended" | "forbidden";
+
   constructor(
     message: string,
-    public readonly code: "unauthenticated" | "suspended" | "forbidden",
+    code: "unauthenticated" | "suspended" | "forbidden",
   ) {
     super(message);
+    this.name = "AuthError";
+    this.code = code;
   }
 }
 
@@ -29,7 +33,7 @@ function staffKeyContext(user: SessionUser) {
 export async function requireUser(): Promise<SessionUser> {
   const session = await getSession();
   if (!session) {
-    throw new AuthError("Sign in with Discord to continue.", "unauthenticated");
+    throw new AuthError("Sign in to continue.", "unauthenticated");
   }
 
   if (isStaffKeyUser(session)) {
@@ -105,13 +109,39 @@ export function loginRedirect(next = "/dashboard"): never {
   redirect(`/login?next=${encodeURIComponent(next)}`);
 }
 
+function redirectIfUnauthenticated(error: unknown, next: string) {
+  unstable_rethrow(error);
+  if (error instanceof AuthError && error.code === "unauthenticated") {
+    loginRedirect(next);
+  }
+}
+
 export async function requireUserOrRedirect(next: string): Promise<SessionUser> {
   try {
     return await requireUser();
   } catch (error) {
-    if (error instanceof AuthError && error.code === "unauthenticated") {
-      loginRedirect(next);
-    }
+    redirectIfUnauthenticated(error, next);
+    throw error;
+  }
+}
+
+export async function requireAnyStaffPage(next = "/admin") {
+  try {
+    return await requireAnyStaff();
+  } catch (error) {
+    redirectIfUnauthenticated(error, next);
+    throw error;
+  }
+}
+
+export async function requireStaffPage(
+  permission: keyof typeof adminPermissions = "full",
+  next = "/admin",
+) {
+  try {
+    return await requireStaff(permission);
+  } catch (error) {
+    redirectIfUnauthenticated(error, next);
     throw error;
   }
 }

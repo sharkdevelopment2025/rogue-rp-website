@@ -1,4 +1,4 @@
-import { requireStaff } from "@/lib/auth/guards";
+import { requireStaffPage } from "@/lib/auth/guards";
 import { isSeededTeamMember, listTeam } from "@/lib/repositories/team";
 import { saveTeamAction, deleteTeamAction } from "@/app/admin/actions";
 import { teamGroups } from "@/data/team";
@@ -13,7 +13,7 @@ export const metadata = createMetadata({
 });
 
 export default async function AdminTeamPage() {
-  await requireStaff("content");
+  await requireStaffPage("content");
   const members = await listTeam();
 
   return (

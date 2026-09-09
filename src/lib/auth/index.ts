@@ -3,6 +3,8 @@ export {
   requireUser,
   requireStaff,
   requireAnyStaff,
+  requireAnyStaffPage,
+  requireStaffPage,
   requireUserOrRedirect,
   getStaffContext,
 } from "@/lib/auth/guards";

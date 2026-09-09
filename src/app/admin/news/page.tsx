@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireStaff } from "@/lib/auth/guards";
+import { requireStaffPage } from "@/lib/auth/guards";
 import { listNews } from "@/lib/repositories/news";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -14,7 +14,7 @@ export const metadata = createMetadata({
 });
 
 export default async function AdminNewsPage() {
-  await requireStaff("content");
+  await requireStaffPage("content");
   const articles = await listNews({ includeUnpublished: true });
 
   return (

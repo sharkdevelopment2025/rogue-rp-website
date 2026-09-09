@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation";
-import { requireStaff } from "@/lib/auth/guards";
+import { requireStaffPage } from "@/lib/auth/guards";
 import { getNewsById } from "@/lib/repositories/news";
 import { NewsEditor } from "@/components/admin/NewsEditor";
 
 export default async function EditArticlePage({ params }: { params: Promise<{ id: string }> }) {
-  await requireStaff("content");
+  await requireStaffPage("content");
   const { id } = await params;
   const article = await getNewsById(id);
   if (!article) {

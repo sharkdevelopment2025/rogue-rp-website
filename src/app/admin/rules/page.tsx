@@ -1,4 +1,4 @@
-import { requireStaff } from "@/lib/auth/guards";
+import { requireStaffPage } from "@/lib/auth/guards";
 import { listRules } from "@/lib/repositories/rules";
 import { deleteRuleItemAction, saveRuleItemAction } from "@/app/admin/actions";
 import { Button } from "@/components/ui/Button";
@@ -12,7 +12,7 @@ export const metadata = createMetadata({
 });
 
 export default async function AdminRulesPage() {
-  await requireStaff("content");
+  await requireStaffPage("content");
   const { categories, updatedAt } = await listRules();
 
   return (

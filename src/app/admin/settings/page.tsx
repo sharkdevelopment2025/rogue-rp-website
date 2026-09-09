@@ -1,4 +1,4 @@
-import { requireStaff } from "@/lib/auth/guards";
+import { requireStaffPage } from "@/lib/auth/guards";
 import { getSettings } from "@/lib/repositories/settings";
 import { saveSettingsAction } from "@/app/admin/actions";
 import { isPersistentStore } from "@/lib/repositories/store";
@@ -12,7 +12,7 @@ export const metadata = createMetadata({
 });
 
 export default async function AdminSettingsPage() {
-  await requireStaff("settings");
+  await requireStaffPage("settings");
   const settings = await getSettings();
 
   return (

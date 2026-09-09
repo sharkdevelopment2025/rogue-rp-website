@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { requireStaff } from "@/lib/auth/guards";
+import { requireStaffPage } from "@/lib/auth/guards";
 import { listUsers } from "@/lib/repositories/users";
 import { setAccessAction } from "@/app/admin/actions";
 import { discordAvatarUrl, formatUkDateTime } from "@/lib/utils";
@@ -14,7 +14,7 @@ export const metadata = createMetadata({
 });
 
 export default async function AdminUsersPage() {
-  await requireStaff("users");
+  await requireStaffPage("users");
   const users = await listUsers();
 
   return (
