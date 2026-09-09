@@ -2,7 +2,7 @@ import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { getSession } from "@/lib/auth/session";
-import { isDiscordOAuthConfigured } from "@/lib/env";
+import { getSettings } from "@/lib/repositories/settings";
 import { createMetadata } from "@/lib/metadata";
 
 export const metadata = createMetadata({
@@ -12,7 +12,8 @@ export const metadata = createMetadata({
 });
 
 export default async function WhitelistPage() {
-  const session = await getSession();
+  const [session, settings] = await Promise.all([getSession(), getSettings()]);
+  const applyHref = session ? "/applications" : settings.discordInvite || "/discord";
 
   return (
     <PageContainer>
@@ -22,7 +23,7 @@ export default async function WhitelistPage() {
         description="Rogue RP operates a serious roleplay environment. To join the server, you may need to complete our whitelist application process."
       />
       <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-        <Button href={session ? "/applications" : "/login?next=/applications"}>
+        <Button href={applyHref} external={!session}>
           Start application
         </Button>
         <Button href="#requirements" variant="secondary">
@@ -34,9 +35,7 @@ export default async function WhitelistPage() {
       </div>
       {!session ? (
         <p className="mt-8 font-display text-xl uppercase text-rogue-chrome">
-          {isDiscordOAuthConfigured()
-            ? "Login with Discord to apply"
-            : "Discord login is not configured yet. Join the Discord server and wait for staff to finish website OAuth setup."}
+          Join the Rogue RP Discord to apply for whitelist.
         </p>
       ) : null}
       <section id="requirements" className="panel mt-14 p-8">

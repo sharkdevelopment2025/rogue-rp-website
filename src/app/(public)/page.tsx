@@ -7,7 +7,6 @@ import { PlayRogueButton } from "@/components/server/PlayRogueButton";
 import { ServerStatus } from "@/components/server/ServerStatus";
 import { getSession } from "@/lib/auth/session";
 import { brand } from "@/lib/config";
-import { isDiscordOAuthConfigured } from "@/lib/env";
 import { listDepartments } from "@/lib/repositories/departments";
 import { listNews } from "@/lib/repositories/news";
 import { getSettings } from "@/lib/repositories/settings";
@@ -26,7 +25,7 @@ export default async function HomePage() {
     getSession(),
     getSettings(),
   ]);
-  const applyHref = session ? "/applications" : "/login?next=/whitelist";
+  const applyHref = session ? "/applications" : "/whitelist";
   const discordHref = settings.discordInvite || "/discord";
 
   return (
@@ -122,11 +121,9 @@ export default async function HomePage() {
           <p className="mt-4 max-w-2xl text-lg text-rogue-muted">Become part of Rogue RP.</p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Button href={session ? "/applications" : "/whitelist"}>Apply for whitelist</Button>
-            {!session && isDiscordOAuthConfigured() ? (
-              <Button href="/login?next=/whitelist" variant="secondary">
-                Login with Discord
-              </Button>
-            ) : null}
+            <Button href={discordHref} variant="secondary">
+              Join Discord
+            </Button>
           </div>
         </div>
       </section>

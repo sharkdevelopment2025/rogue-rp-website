@@ -9,7 +9,7 @@ export const privacyContent = {
     },
     {
       heading: "What this website collects",
-      body: "If Discord login is enabled, Rogue RP stores the Discord identifiers Discord provides through OAuth2 (such as user ID, username and avatar hash) in an encrypted session cookie. Passwords are never requested or stored. Application data is requested from the existing Rogue RP applications backend when that service is configured.",
+      body: "Staff login stores a username in an encrypted session cookie. Application data is requested from the existing Rogue RP applications backend when that service is configured.",
     },
     {
       heading: "Cookies",

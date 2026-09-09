@@ -22,7 +22,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       <div className="flex min-h-screen items-center justify-center px-6">
         <ErrorState
           title="Staff only"
-          message="You do not have access to staff systems. Sign in from Login with a staff username and password, or with a Discord account that has a mapped staff role."
+          message="You do not have access to staff systems. Sign in from Login with a staff username and password."
           retryHref="/login?next=/admin"
         />
       </div>

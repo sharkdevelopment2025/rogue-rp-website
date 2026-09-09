@@ -68,7 +68,7 @@ export default async function DashboardPage() {
           <p>Community, support and department channels live on the Rogue RP Discord.</p>
         </DashboardCard>
         <DashboardCard title="Profile">
-          <p>Discord identity is loaded from OAuth and cannot be edited into someone else.</p>
+          <p>Staff identity comes from the local login and cannot be edited into someone else.</p>
         </DashboardCard>
         <DashboardCard title="Applications" href="/applications">
           <p>{applications.items.length} application(s) on file.</p>

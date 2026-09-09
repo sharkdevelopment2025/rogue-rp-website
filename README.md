@@ -10,7 +10,7 @@ This is a custom Next.js application. It is not a FiveM website template.
 
 - Cinematic public site with Rogue RP branding and the supplied circular emblem
 - Live FiveM server status and player count through a server-side API
-- Discord OAuth2 login with encrypted HTTP-only sessions
+- Staff username and password login with encrypted HTTP-only sessions
 - Server-side Discord role checks for `/admin`
 - Application dashboard that consumes the existing Rogue RP Discord applications bot
 - Configurable departments, rules, FAQ, team, news and media
@@ -61,8 +61,6 @@ Public variables (safe in the browser):
 
 Private variables (server only):
 
-- `DISCORD_CLIENT_ID`
-- `DISCORD_CLIENT_SECRET`
 - `DISCORD_BOT_TOKEN`
 - `DISCORD_GUILD_ID`
 - `DISCORD_ROLE_OWNER`
@@ -80,21 +78,22 @@ Private variables (server only):
 - `FIVEM_CONNECT_URL` — currently `https://cfx.re/join/vqqd59q`
 - `FIVEM_MAX_PLAYERS` — fallback only; live `sv_maxclients` is preferred
 - `SESSION_SECRET` — at least 32 random characters
+- `STAFF_USERNAME` — staff login username (default `admin`)
+- `STAFF_ACCESS_CODE` — staff login password (8+ characters)
 
 The Discord bot token is never sent to the client.
 
-## Discord OAuth setup
+## Staff login
 
-1. Create an application at [the Discord developer portal](https://discord.com/developers/applications).
-2. Add a redirect URL:
-   - Local: `http://localhost:3000/api/auth/callback`
-   - Production: `https://YOUR_DOMAIN/api/auth/callback`
-3. Copy the client ID and client secret into environment variables.
-4. Create a bot for the same application if you need guild/role checks.
-5. Invite the bot to the Rogue RP Discord with permission to see members.
-6. Copy the guild ID and staff role IDs into the `DISCORD_ROLE_*` variables.
+The public `/login` page is username and password only. It is for staff who edit the website.
 
-Login uses the `identify` scope only. Passwords are never stored.
+1. Set `STAFF_USERNAME` and `STAFF_ACCESS_CODE` in `.env.local` and in Vercel project settings.
+2. Open `/login` and sign in.
+3. You are sent to `/admin`.
+
+On Vercel, also set `NEXT_PUBLIC_SITE_URL` to the live HTTPS URL and use a long random `SESSION_SECRET`.
+
+The community Discord invite stays on the site. Players apply through Discord, not through a website Discord login.
 
 ## Discord bot integration
 
@@ -129,14 +128,7 @@ On Vercel, the status check is an outbound HTTP request to port 30120. If a host
 
 ## Admin setup
 
-`/admin` requires all of the following, checked on the server:
-
-1. The visitor is signed in with Discord.
-2. The visitor is a member of `DISCORD_GUILD_ID`.
-3. The visitor has one of the configured staff role IDs.
-4. The specific page permission matches that role.
-
-A client `isAdmin=true` flag is never trusted.
+`/admin` requires a successful staff username and password login. A client `isAdmin=true` flag is never trusted.
 
 Role access:
 
@@ -156,20 +148,19 @@ Rogue RP Website
 
 1. Push the project to GitHub.
 2. Import the repository into Vercel.
-3. Set the environment variables from `.env.example`.
+3. Set `NEXT_PUBLIC_SITE_URL`, `SESSION_SECRET`, `STAFF_USERNAME` and `STAFF_ACCESS_CODE`.
 4. Deploy.
-5. Add the production Discord OAuth redirect URL.
-6. Attach the custom domain, for example `roguerp.co.uk`.
-7. Test Discord login.
-8. Test `/api/server/status`.
-9. Test applications once `APPLICATION_API_URL` is live.
+5. Attach the custom domain, for example `roguerp.co.uk`.
+6. Test staff login at `/login`.
+7. Test `/api/server/status`.
+8. Test applications once `APPLICATION_API_URL` is live.
 
 `NEXT_PUBLIC_SITE_URL` must be the real production URL. Do not hardcode the domain in source.
 
 ## Production configuration
 
 - Use a long random `SESSION_SECRET`.
-- Keep Discord and application secrets in Vercel project settings.
+- Keep application secrets in Vercel project settings.
 - After attaching a database or KV store, swap the repository store in `src/lib/repositories/store.ts`. Local development already persists to `.data/store.json`. Vercel deployments stay serverless and do not write to the filesystem.
 - Replace the placeholder Privacy and Terms copy before making legal claims.
 
@@ -181,17 +172,16 @@ Rogue RP Website
 - Rate limits on login, applications and analytics
 - Server-side authorization for every staff action
 - Security headers in `next.config.ts` and `src/proxy.ts`
-- No Discord passwords
 - No bot tokens in `NEXT_PUBLIC_*` variables
 - User-facing errors stay generic
 
 ## Troubleshooting
 
-**Login returns to `/login?error=oauth`**
-Check the Discord redirect URL, client ID/secret, and `NEXT_PUBLIC_SITE_URL`.
+**Login returns to `/login?error=staff-invalid`**
+Confirm `STAFF_USERNAME` and `STAFF_ACCESS_CODE` on the deployment.
 
 **Admin says staff only**
-Confirm the bot token, guild ID and role IDs. The user must be in the Discord and hold a mapped role.
+Sign in at `/login` with the staff username and password.
 
 **Server status is “Offline”**
 Confirm `play.rogueroleplay.co.uk:30120` is reachable from the host running the website, and that `FIVEM_CONNECT_CODE` is `vqqd59q`.

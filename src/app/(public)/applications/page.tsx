@@ -20,9 +20,7 @@ export default async function ApplicationsPage() {
   const settings = await getSettings();
   const env = getServerEnv();
   const mine = session ? await getMyApplications(session.discordId) : null;
-  const startHref =
-    env.applicationStartUrl ||
-    (session ? settings.discordInvite || "/discord" : "/login?next=/applications");
+  const startHref = env.applicationStartUrl || settings.discordInvite || "/discord";
 
   return (
     <PageContainer>
@@ -36,8 +34,8 @@ export default async function ApplicationsPage() {
           Start application
         </Button>
         {!session ? (
-          <Button href="/login?next=/applications" variant="secondary">
-            Login with Discord
+          <Button href={settings.discordInvite || "/discord"} variant="secondary" external>
+            Join Discord
           </Button>
         ) : null}
       </div>

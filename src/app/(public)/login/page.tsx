@@ -3,19 +3,19 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { getSession } from "@/lib/auth/session";
 import { isStaffKeyUser } from "@/lib/auth/staff-access";
-import { isDiscordOAuthConfigured, isStaffAccessConfigured } from "@/lib/env";
+import { isStaffAccessConfigured } from "@/lib/env";
 import { isSafeRelativePath } from "@/lib/utils";
 import { createMetadata } from "@/lib/metadata";
 
 export const metadata = createMetadata({
   title: "Login",
-  description: "Login to Rogue RP with Discord, or sign in locally with a staff username and password.",
+  description: "Sign in to the Rogue RP staff editor with a username and password.",
   path: "/login",
 });
 
 const errorCopy: Record<string, string> = {
-  oauth: "Sign-in could not be completed. Try again, or ask staff to check Discord OAuth configuration.",
-  config: "Discord login is not configured on this deployment.",
+  oauth: "Sign-in could not be completed. Try again.",
+  config: "Staff login is not configured on this deployment.",
   rate: "Too many sign-in attempts. Wait a moment and try again.",
   suspended: "This website account has been suspended.",
   "staff-invalid": "That username or password is not valid.",
@@ -30,18 +30,17 @@ export default async function LoginPage({
 }) {
   const session = await getSession();
   const params = await searchParams;
-  const next = isSafeRelativePath(params.next) ? params.next : "/dashboard";
+  const next = isSafeRelativePath(params.next) ? params.next : "/admin";
   const staffNext = next.startsWith("/admin") ? next : "/admin";
   const staffConfigured = isStaffAccessConfigured();
-  const discordConfigured = isDiscordOAuthConfigured();
   const errorMessage = params.error ? errorCopy[params.error] || errorCopy.oauth : null;
 
   return (
     <PageContainer>
       <PageHeader
-        kicker="Account"
+        kicker="Staff"
         title="Login"
-        description="Players sign in with Discord. Local staff can sign in with a username and password. Discord passwords are never stored."
+        description="Sign in with your staff username and password to edit the public website."
       />
       {session ? (
         <p className="mt-8 font-display text-2xl uppercase text-white">
@@ -54,64 +53,43 @@ export default async function LoginPage({
         </div>
       ) : null}
       {errorMessage ? <p className="mt-6 text-sm text-rogue-danger">{errorMessage}</p> : null}
-      <div className="mt-10 grid gap-6 lg:grid-cols-2">
-        <section className="panel p-6">
-          <h2 className="font-display text-2xl uppercase text-white">Discord</h2>
-          <p className="mt-3 text-sm leading-6 text-rogue-muted">
-            Use this for your player dashboard, whitelist status and applications.
+      <section className="panel mt-10 max-w-xl p-6">
+        <h2 className="font-display text-2xl uppercase text-white">Staff login</h2>
+        <p className="mt-3 text-sm leading-6 text-rogue-muted">
+          Post news, update staff, media, rules and other public pages.
+        </p>
+        {staffConfigured ? (
+          <form action="/api/auth/staff" method="POST" className="mt-6 grid gap-3">
+            <input type="hidden" name="next" value={staffNext} />
+            <label className="grid gap-2 text-sm text-rogue-muted">
+              Username
+              <input
+                name="username"
+                type="text"
+                required
+                autoComplete="username"
+                className="min-h-11 border border-white/10 bg-black/40 px-3 text-white"
+              />
+            </label>
+            <label className="grid gap-2 text-sm text-rogue-muted">
+              Password
+              <input
+                name="password"
+                type="password"
+                required
+                minLength={8}
+                autoComplete="current-password"
+                className="min-h-11 border border-white/10 bg-black/40 px-3 text-white"
+              />
+            </label>
+            <Button type="submit">Sign in</Button>
+          </form>
+        ) : (
+          <p className="mt-6 text-sm text-rogue-muted">
+            Set STAFF_USERNAME and STAFF_ACCESS_CODE in the environment to enable staff login.
           </p>
-          <div className="mt-6">
-            {discordConfigured ? (
-              <Button href={`/api/auth/discord?next=${encodeURIComponent(next)}`} variant="discord">
-                Login with Discord
-              </Button>
-            ) : (
-              <p className="text-sm text-rogue-muted">
-                Discord OAuth is not configured yet. Set DISCORD_CLIENT_ID and DISCORD_CLIENT_SECRET
-                to enable player login.
-              </p>
-            )}
-          </div>
-        </section>
-        <section className="panel p-6">
-          <h2 className="font-display text-2xl uppercase text-white">Staff login</h2>
-          <p className="mt-3 text-sm leading-6 text-rogue-muted">
-            Post news, update staff, media, rules and other public pages. Use your local username
-            and password.
-          </p>
-          {staffConfigured ? (
-            <form action="/api/auth/staff" method="POST" className="mt-6 grid gap-3">
-              <input type="hidden" name="next" value={staffNext} />
-              <label className="grid gap-2 text-sm text-rogue-muted">
-                Username
-                <input
-                  name="username"
-                  type="text"
-                  required
-                  autoComplete="username"
-                  className="min-h-11 border border-white/10 bg-black/40 px-3 text-white"
-                />
-              </label>
-              <label className="grid gap-2 text-sm text-rogue-muted">
-                Password
-                <input
-                  name="password"
-                  type="password"
-                  required
-                  minLength={8}
-                  autoComplete="current-password"
-                  className="min-h-11 border border-white/10 bg-black/40 px-3 text-white"
-                />
-              </label>
-              <Button type="submit">Sign in</Button>
-            </form>
-          ) : (
-            <p className="mt-6 text-sm text-rogue-muted">
-              Set STAFF_USERNAME and STAFF_ACCESS_CODE in the environment to enable staff login.
-            </p>
-          )}
-        </section>
-      </div>
+        )}
+      </section>
     </PageContainer>
   );
 }

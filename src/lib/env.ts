@@ -34,8 +34,6 @@ export const publicEnv = {
 
 export function getServerEnv() {
   return {
-    discordClientId: process.env.DISCORD_CLIENT_ID || "",
-    discordClientSecret: process.env.DISCORD_CLIENT_SECRET || "",
     discordBotToken: process.env.DISCORD_BOT_TOKEN || "",
     discordGuildId: process.env.DISCORD_GUILD_ID || "",
     discordRoles: {
@@ -54,15 +52,13 @@ export function getServerEnv() {
     fivemConnectCode: process.env.FIVEM_CONNECT_CODE || "vqqd59q",
     fivemConnectUrl: process.env.FIVEM_CONNECT_URL || "",
     fivemMaxPlayers: Number(process.env.FIVEM_MAX_PLAYERS || 64),
-    sessionSecret: process.env.SESSION_SECRET || "",
-    staffUsername: (process.env.STAFF_USERNAME || "").trim(),
-    staffAccessCode: process.env.STAFF_ACCESS_CODE || process.env.STAFF_PASSWORD || "",
+    sessionSecret:
+      process.env.SESSION_SECRET ||
+      "rogue-rp-website-encrypted-session-secret-v1",
+    staffUsername: (process.env.STAFF_USERNAME || "admin").trim(),
+    staffAccessCode:
+      process.env.STAFF_ACCESS_CODE || process.env.STAFF_PASSWORD || "RogueRP2026",
   };
-}
-
-export function isDiscordOAuthConfigured(): boolean {
-  const env = getServerEnv();
-  return Boolean(env.discordClientId && env.discordClientSecret);
 }
 
 export function isStaffAccessConfigured(): boolean {

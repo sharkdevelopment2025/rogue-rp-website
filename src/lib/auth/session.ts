@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { EncryptJWT, jwtDecrypt } from "jose";
 import { getServerEnv, publicEnv } from "@/lib/env";
-import { OAUTH_STATE_COOKIE, SESSION_COOKIE } from "@/lib/auth/constants";
+import { SESSION_COOKIE } from "@/lib/auth/constants";
 import type { SessionUser } from "@/types";
 
 export { SESSION_COOKIE };
@@ -22,7 +22,7 @@ async function secretKey(): Promise<Uint8Array> {
 }
 
 function cookieSecure(): boolean {
-  return publicEnv.siteUrl.startsWith("https://");
+  return process.env.VERCEL === "1" || publicEnv.siteUrl.startsWith("https://");
 }
 
 function cookieOptions(maxAge: number) {
@@ -96,17 +96,4 @@ export function clearSessionRedirect(url: URL, status = 303) {
 export async function clearSessionCookie(): Promise<void> {
   const jar = await cookies();
   jar.set(SESSION_COOKIE, "", cookieOptions(0));
-}
-
-export function oauthStartRedirect(authorizeUrl: string, state: string) {
-  const response = NextResponse.redirect(authorizeUrl);
-  response.cookies.set(OAUTH_STATE_COOKIE, state, cookieOptions(60 * 10));
-  return response;
-}
-
-export async function consumeOAuthState(): Promise<string | null> {
-  const jar = await cookies();
-  const state = jar.get(OAUTH_STATE_COOKIE)?.value ?? null;
-  jar.set(OAUTH_STATE_COOKIE, "", cookieOptions(0));
-  return state;
 }

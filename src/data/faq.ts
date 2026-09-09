@@ -141,7 +141,7 @@ export const faqSeed: FaqCategory[] = [
         id: "t2",
         question: "I am stuck on login.",
         answer:
-          "Discord OAuth must be configured with the correct redirect URL. If that is missing, staff need to finish the website Discord application setup.",
+          "Staff login uses a username and password. If sign-in fails, confirm STAFF_USERNAME and STAFF_ACCESS_CODE are set on the live site, then try again.",
       },
     ],
   },
