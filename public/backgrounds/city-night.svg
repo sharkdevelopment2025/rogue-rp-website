@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" fill="none">
+  <rect width="1600" height="900" fill="#05070B"/>
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <g opacity=".35">
+    <path d="M0 560h1600" stroke="#00A3FF"/>
+    <path d="M0 0v900M200 0v900M400 0v900M600 0v900M800 0v900M1000 0v900M1200 0v900M1400 0v900M1600 0v900" stroke="#00A3FF" stroke-opacity=".12"/>
+  </g>
+  <path d="M0 620h1600v280H0z" fill="#070B12"/>
+  <path d="M80 620V390h70v230zm90 0V300h110l20 40v280zm150 0V360h60v260zm80 0V240h140v380zm160 0V410h70v210zm90 0V280h120v340zm140 0V350h80v270zm100 0V190h160v430zm180 0V330h90v290zm110 0V250h130v370z" fill="#0E1522" stroke="#00A3FF" stroke-opacity=".25"/>
+  <path d="M0 760h1600" stroke="#ffffff" stroke-opacity=".08"/>
+  <path d="M0 790h1600" stroke="#ff3b3b" stroke-opacity=".12"/>
+  <circle cx="1280" cy="120" r="40" fill="#00A3FF" fill-opacity=".2"/>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="900">
+      <stop stop-color="#07101C"/>
+      <stop offset="1" stop-color="#05070B"/>
+    </linearGradient>
+  </defs>
+</svg>
