@@ -20,11 +20,15 @@ export default async function DepartmentsPage() {
         title="Departments"
         description="Emergency services and civilian operations that keep the Rogue RP city moving."
       />
-      <div className="mt-12 grid gap-6 lg:grid-cols-2">
-        {departments.map((department) => (
-          <DepartmentCard key={department.id} department={department} />
-        ))}
-      </div>
+      {departments.length ? (
+        <div className="mt-12 grid gap-6 lg:grid-cols-2">
+          {departments.map((department) => (
+            <DepartmentCard key={department.id} department={department} />
+          ))}
+        </div>
+      ) : (
+        <p className="mt-12 text-rogue-muted">No departments are listed yet.</p>
+      )}
     </PageContainer>
   );
 }

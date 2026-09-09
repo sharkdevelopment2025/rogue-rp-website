@@ -7,7 +7,7 @@ import { writeAuditLog } from "@/lib/repositories/audit";
 import { saveNews, deleteNews, setNewsPublished } from "@/lib/repositories/news";
 import { deleteTeamMember, getTeamMember, saveTeamMember } from "@/lib/repositories/team";
 import { normalizeStaffGroup } from "@/data/team";
-import { saveDepartment } from "@/lib/repositories/departments";
+import { deleteDepartment, getDepartmentById, saveDepartment } from "@/lib/repositories/departments";
 import { saveSettings } from "@/lib/repositories/settings";
 import { setUserAccess } from "@/lib/repositories/users";
 import { listAllMedia, saveMediaItem, deleteMediaItem } from "@/lib/repositories/media";
@@ -109,18 +109,32 @@ export async function deleteTeamAction(id: string) {
   revalidatePath("/admin/team");
 }
 
+function revalidateDepartmentPaths(slug?: string, previousSlug?: string) {
+  revalidatePath("/");
+  revalidatePath("/departments");
+  revalidatePath("/admin/departments");
+  if (slug) {
+    revalidatePath(`/departments/${slug}`);
+  }
+  if (previousSlug && previousSlug !== slug) {
+    revalidatePath(`/departments/${previousSlug}`);
+  }
+}
+
 export async function saveDepartmentAction(formData: FormData) {
   await requireStaff("content");
   const uploaded = await savePublicUpload(formData.get("logoFile"));
-  await saveDepartment({
-    id: String(formData.get("id")),
-    slug: String(formData.get("slug")),
-    name: String(formData.get("name")),
-    shortName: String(formData.get("shortName")),
-    tagline: String(formData.get("tagline")),
-    description: String(formData.get("description")),
-    colour: String(formData.get("colour")),
-    logo: uploaded || String(formData.get("logo") || "").trim() || "/logo.jpg",
+  const id = String(formData.get("id") || "").trim();
+  const existing = id ? await getDepartmentById(id) : null;
+  const department = await saveDepartment({
+    id: existing?.id,
+    slug: String(formData.get("slug") || ""),
+    name: String(formData.get("name") || "").trim(),
+    shortName: String(formData.get("shortName") || "").trim(),
+    tagline: String(formData.get("tagline") || ""),
+    description: String(formData.get("description") || ""),
+    colour: String(formData.get("colour") || ""),
+    logo: uploaded || String(formData.get("logo") || "").trim() || existing?.logo || "/logo.jpg",
     requirements: String(formData.get("requirements") || "")
       .split("\n")
       .map((line) => line.trim())
@@ -131,14 +145,22 @@ export async function saveDepartmentAction(formData: FormData) {
         name: String(formData.get("leadName") || "Assigned"),
       },
     ],
-    statistics: [
-      { label: "Application", value: String(formData.get("applicationValue") || "Required") },
-    ],
     applicationType: String(formData.get("applicationType") || "Department"),
   });
-  await audit("department.save", String(formData.get("id")), String(formData.get("name")));
-  revalidatePath("/departments");
-  revalidatePath("/admin/departments");
+  await audit(
+    existing ? "department.save" : "department.create",
+    department.id,
+    department.name,
+  );
+  revalidateDepartmentPaths(department.slug, existing?.slug);
+}
+
+export async function deleteDepartmentAction(id: string) {
+  await requireStaff("content");
+  const existing = await getDepartmentById(id);
+  await deleteDepartment(id);
+  await audit("department.delete", id, existing?.name || "");
+  revalidateDepartmentPaths(existing?.slug);
 }
 
 export async function saveSettingsAction(formData: FormData) {

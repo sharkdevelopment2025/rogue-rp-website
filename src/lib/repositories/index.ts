@@ -1,5 +1,11 @@
 export { listNews, getNewsBySlug, getNewsById, saveNews, deleteNews, setNewsPublished } from "@/lib/repositories/news";
-export { listDepartments, getDepartmentBySlug, saveDepartment } from "@/lib/repositories/departments";
+export {
+  listDepartments,
+  getDepartmentBySlug,
+  getDepartmentById,
+  saveDepartment,
+  deleteDepartment,
+} from "@/lib/repositories/departments";
 export { listTeam, saveTeamMember, deleteTeamMember } from "@/lib/repositories/team";
 export { listRules, saveRules } from "@/lib/repositories/rules";
 export { listFaq, saveFaq } from "@/lib/repositories/faq";

@@ -50,7 +50,7 @@ const cms = [
   {
     href: "/admin/departments",
     title: "Edit departments",
-    body: "Update department copy, logos and leadership.",
+    body: "Add, update or remove department pages, logos and leadership.",
   },
   {
     href: "/admin/settings",
@@ -99,17 +99,19 @@ export default async function AdminHomePage() {
           : " This host has no attached database, so saves last for the current instance only."}
       </p>
       <div className="mt-8 flex flex-wrap gap-3">
-        <Button href="/admin/news/new">Post news</Button>
-        <Button href="/admin/team" variant="secondary">
+        <Button href="/admin/news/new" prefetch={false}>
+          Post news
+        </Button>
+        <Button href="/admin/team" variant="secondary" prefetch={false}>
           Edit staff
         </Button>
-        <Button href="/admin/media" variant="secondary">
+        <Button href="/admin/media" variant="secondary" prefetch={false}>
           Post media
         </Button>
       </div>
       <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {cms.map((item) => (
-          <Link key={item.href} href={item.href} className="panel block p-5 transition hover:border-rogue-blue/50">
+          <Link key={item.href} href={item.href} prefetch={false} className="panel block p-5 transition hover:border-rogue-blue/50">
             <h2 className="font-display text-xl uppercase text-white">{item.title}</h2>
             <p className="mt-2 text-sm leading-6 text-rogue-muted">{item.body}</p>
           </Link>

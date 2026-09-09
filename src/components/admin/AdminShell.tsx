@@ -30,6 +30,7 @@ export function AdminShell({
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={false}
                 className="px-3 py-2 font-display text-sm uppercase tracking-[0.14em] text-rogue-muted hover:text-white"
               >
                 {item.label}

@@ -4,6 +4,8 @@ import { AuthError, requireAnyStaff } from "@/lib/auth/guards";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { ErrorState } from "@/components/ui/ErrorState";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   let staff: Awaited<ReturnType<typeof requireAnyStaff>> | null = null;
   let denied = false;

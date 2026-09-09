@@ -26,6 +26,7 @@ export function Button({
   disabled,
   onClick,
   external = false,
+  prefetch,
 }: {
   href?: string;
   children: ReactNode;
@@ -35,6 +36,7 @@ export function Button({
   disabled?: boolean;
   onClick?: () => void;
   external?: boolean;
+  prefetch?: boolean;
 }) {
   const classes = cn(
     "inline-flex min-h-11 items-center justify-center gap-2 px-5 text-sm transition disabled:cursor-not-allowed disabled:opacity-50",
@@ -47,6 +49,7 @@ export function Button({
       <Link
         href={href}
         className={classes}
+        prefetch={prefetch}
         target={external ? "_blank" : undefined}
         rel={external ? "noreferrer noopener" : undefined}
       >

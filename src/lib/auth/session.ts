@@ -1,11 +1,13 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { EncryptJWT, jwtDecrypt } from "jose";
-import { getServerEnv, publicEnv } from "@/lib/env";
+import { getServerEnv } from "@/lib/env";
 import { SESSION_COOKIE } from "@/lib/auth/constants";
 import type { SessionUser } from "@/types";
 
 export { SESSION_COOKIE };
+
+const SESSION_MAX_AGE = 60 * 60 * 24 * 14;
 
 async function secretKey(): Promise<Uint8Array> {
   const env = getServerEnv();
@@ -21,15 +23,25 @@ async function secretKey(): Promise<Uint8Array> {
   return new Uint8Array(hash);
 }
 
-function cookieSecure(): boolean {
-  return process.env.VERCEL === "1" || publicEnv.siteUrl.startsWith("https://");
+async function cookieSecure(requestUrl?: string): Promise<boolean> {
+  if (process.env.VERCEL === "1") {
+    return true;
+  }
+  if (requestUrl?.startsWith("https://")) {
+    return true;
+  }
+  const proto = (await headers()).get("x-forwarded-proto");
+  if (proto) {
+    return proto.split(",")[0]?.trim() === "https";
+  }
+  return false;
 }
 
-function cookieOptions(maxAge: number) {
+async function cookieOptions(maxAge: number, requestUrl?: string) {
   return {
     httpOnly: true,
     sameSite: "lax" as const,
-    secure: cookieSecure(),
+    secure: await cookieSecure(requestUrl),
     path: "/",
     maxAge,
   };
@@ -77,23 +89,23 @@ export async function getSession(): Promise<SessionUser | null> {
 export async function setSessionCookie(user: SessionUser): Promise<void> {
   const jar = await cookies();
   const token = await createSession(user);
-  jar.set(SESSION_COOKIE, token, cookieOptions(60 * 60 * 24 * 14));
+  jar.set(SESSION_COOKIE, token, await cookieOptions(SESSION_MAX_AGE));
 }
 
 export async function sessionRedirect(url: URL, user: SessionUser, status = 303) {
   const response = NextResponse.redirect(url, status);
   const token = await createSession(user);
-  response.cookies.set(SESSION_COOKIE, token, cookieOptions(60 * 60 * 24 * 14));
+  response.cookies.set(SESSION_COOKIE, token, await cookieOptions(SESSION_MAX_AGE, url.toString()));
   return response;
 }
 
-export function clearSessionRedirect(url: URL, status = 303) {
+export async function clearSessionRedirect(url: URL, status = 303) {
   const response = NextResponse.redirect(url, status);
-  response.cookies.set(SESSION_COOKIE, "", cookieOptions(0));
+  response.cookies.set(SESSION_COOKIE, "", await cookieOptions(0, url.toString()));
   return response;
 }
 
 export async function clearSessionCookie(): Promise<void> {
   const jar = await cookies();
-  jar.set(SESSION_COOKIE, "", cookieOptions(0));
+  jar.set(SESSION_COOKIE, "", await cookieOptions(0));
 }

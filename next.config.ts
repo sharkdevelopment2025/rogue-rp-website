@@ -32,6 +32,14 @@ const nextConfig: NextConfig = {
           { key: "X-DNS-Prefetch-Control", value: "on" },
         ],
       },
+      {
+        source: "/admin",
+        headers: [{ key: "Cache-Control", value: "private, no-store" }],
+      },
+      {
+        source: "/admin/:path*",
+        headers: [{ key: "Cache-Control", value: "private, no-store" }],
+      },
     ];
   },
 };
