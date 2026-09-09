@@ -55,7 +55,8 @@ export function getServerEnv() {
     fivemConnectUrl: process.env.FIVEM_CONNECT_URL || "",
     fivemMaxPlayers: Number(process.env.FIVEM_MAX_PLAYERS || 64),
     sessionSecret: process.env.SESSION_SECRET || "",
-    staffAccessCode: process.env.STAFF_ACCESS_CODE || "",
+    staffUsername: (process.env.STAFF_USERNAME || "").trim(),
+    staffAccessCode: process.env.STAFF_ACCESS_CODE || process.env.STAFF_PASSWORD || "",
   };
 }
 
@@ -65,7 +66,8 @@ export function isDiscordOAuthConfigured(): boolean {
 }
 
 export function isStaffAccessConfigured(): boolean {
-  return getServerEnv().staffAccessCode.trim().length >= 8;
+  const env = getServerEnv();
+  return env.staffUsername.length > 0 && env.staffAccessCode.trim().length >= 8;
 }
 
 export function isDiscordBotConfigured(): boolean {

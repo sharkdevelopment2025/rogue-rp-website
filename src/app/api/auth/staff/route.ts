@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sessionRedirect } from "@/lib/auth/session";
-import { createStaffKeyUser, staffAccessCodeMatches } from "@/lib/auth/staff-access";
+import { createStaffKeyUser, staffCredentialsMatch } from "@/lib/auth/staff-access";
 import { isStaffAccessConfigured } from "@/lib/env";
 import { clientKey, rateLimit } from "@/lib/server/rate-limit";
 import { isSafeRelativePath } from "@/lib/utils";
@@ -29,7 +29,10 @@ export async function POST(request: NextRequest) {
     return loginRedirect(request, "staff-off", destination);
   }
 
-  const matched = await staffAccessCodeMatches(String(formData.get("code") || ""));
+  const matched = await staffCredentialsMatch(
+    String(formData.get("username") || ""),
+    String(formData.get("password") || formData.get("code") || ""),
+  );
   if (!matched) {
     return loginRedirect(request, "staff-invalid", destination);
   }

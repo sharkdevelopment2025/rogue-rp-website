@@ -22,7 +22,7 @@ export default async function AdminSettingsPage() {
         {isPersistentStore()
           ? "Changes are saved to the local development store."
           : "This deployment has no attached database. Settings save in memory for the current serverless instance until a Vercel-compatible store is connected."}{" "}
-        Staff login uses STAFF_ACCESS_CODE in the server environment, not this form.
+        Staff login uses STAFF_USERNAME and STAFF_ACCESS_CODE in the server environment, not this form.
       </p>
       <form action={saveSettingsAction} className="panel mt-8 grid max-w-xl gap-4 p-6">
         <label className="grid gap-2 text-sm text-rogue-muted">
