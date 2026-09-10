@@ -48,8 +48,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html
       lang="en-GB"
       className={`${geistSans.variable} ${rajdhani.variable} ${ibmPlexMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="flex min-h-full flex-col bg-rogue-void text-foreground">{children}</body>
+      <body className="flex min-h-full flex-col bg-rogue-void text-foreground" suppressHydrationWarning>
+        {children}
+      </body>
     </html>
   );
 }
