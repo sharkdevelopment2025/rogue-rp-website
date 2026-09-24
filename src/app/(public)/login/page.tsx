@@ -54,7 +54,11 @@ export default async function LoginPage({
           Welcome back, {session.globalName || session.username}
         </p>
       ) : null}
-      {errorMessage ? <p className="mt-6 text-sm text-rogue-danger">{errorMessage}</p> : null}
+      {errorMessage ? (
+        <p className="mt-6 rounded border border-rogue-danger/40 bg-rogue-danger/10 px-4 py-3 text-sm text-rogue-danger">
+          {errorMessage}
+        </p>
+      ) : null}
       <section className="panel mt-10 max-w-xl p-6">
         <h2 className="font-display text-2xl uppercase text-white">Staff login</h2>
         <p className="mt-3 text-sm leading-6 text-rogue-muted">
