@@ -1,6 +1,8 @@
+import { redirect } from "next/navigation";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/Button";
+import { staffLogin } from "@/app/(public)/login/actions";
 import { getSession } from "@/lib/auth/session";
 import { isStaffKeyUser } from "@/lib/auth/staff-access";
 import { isStaffAccessConfigured } from "@/lib/env";
@@ -35,6 +37,10 @@ export default async function LoginPage({
   const staffConfigured = isStaffAccessConfigured();
   const errorMessage = params.error ? errorCopy[params.error] || errorCopy.oauth : null;
 
+  if (isStaffKeyUser(session) && !params.error) {
+    redirect(staffNext);
+  }
+
   return (
     <PageContainer>
       <PageHeader
@@ -59,7 +65,7 @@ export default async function LoginPage({
           Post news, update staff, media, rules and other public pages.
         </p>
         {staffConfigured ? (
-          <form action="/api/auth/staff" method="POST" className="mt-6 grid gap-3">
+          <form action={staffLogin} className="mt-6 grid gap-3">
             <input type="hidden" name="next" value={staffNext} />
             <label className="grid gap-2 text-sm text-rogue-muted">
               Username

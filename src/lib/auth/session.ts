@@ -24,17 +24,29 @@ async function secretKey(): Promise<Uint8Array> {
 }
 
 async function cookieSecure(requestUrl?: string): Promise<boolean> {
-  if (process.env.VERCEL === "1") {
-    return true;
+  const headerStore = await headers();
+  const host = (
+    headerStore.get("x-forwarded-host") ||
+    headerStore.get("host") ||
+    ""
+  )
+    .split(",")[0]
+    ?.trim()
+    .toLowerCase();
+  const hostname = host.split(":")[0];
+  if (hostname === "localhost" || hostname === "127.0.0.1" || hostname.endsWith(".local")) {
+    return false;
   }
+
   if (requestUrl?.startsWith("https://")) {
     return true;
   }
-  const proto = (await headers()).get("x-forwarded-proto");
-  if (proto) {
-    return proto.split(",")[0]?.trim() === "https";
+  if (requestUrl?.startsWith("http://")) {
+    return false;
   }
-  return false;
+
+  const proto = headerStore.get("x-forwarded-proto")?.split(",")[0]?.trim();
+  return proto === "https";
 }
 
 async function cookieOptions(maxAge: number, requestUrl?: string) {
@@ -96,6 +108,7 @@ export async function sessionRedirect(url: URL, user: SessionUser, status = 303)
   const response = NextResponse.redirect(url, status);
   const token = await createSession(user);
   response.cookies.set(SESSION_COOKIE, token, await cookieOptions(SESSION_MAX_AGE, url.toString()));
+  response.headers.set("Cache-Control", "no-store");
   return response;
 }
 

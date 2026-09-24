@@ -9,11 +9,21 @@ function nextPath(value: string | null) {
   return isSafeRelativePath(value) ? value : "/admin";
 }
 
+function sameOrigin(request: NextRequest, pathname: string, search: Record<string, string>) {
+  const url = request.nextUrl.clone();
+  url.pathname = pathname;
+  url.search = "";
+  for (const [key, value] of Object.entries(search)) {
+    url.searchParams.set(key, value);
+  }
+  return url;
+}
+
 function loginRedirect(request: NextRequest, code: string, next: string) {
-  const url = new URL("/login", request.url);
-  url.searchParams.set("next", next);
-  url.searchParams.set("error", code);
-  return NextResponse.redirect(url, 303);
+  const url = sameOrigin(request, "/login", { next, error: code });
+  const response = NextResponse.redirect(url, 303);
+  response.headers.set("Cache-Control", "no-store");
+  return response;
 }
 
 export async function POST(request: NextRequest) {
@@ -37,5 +47,8 @@ export async function POST(request: NextRequest) {
     return loginRedirect(request, "staff-invalid", destination);
   }
 
-  return sessionRedirect(new URL(destination, request.url), createStaffKeyUser());
+  const url = request.nextUrl.clone();
+  url.pathname = destination.split("?")[0] || "/admin";
+  url.search = destination.includes("?") ? destination.slice(destination.indexOf("?")) : "";
+  return sessionRedirect(url, createStaffKeyUser());
 }
