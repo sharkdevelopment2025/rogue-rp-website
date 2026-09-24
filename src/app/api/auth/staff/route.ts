@@ -1,26 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
-import { sessionRedirect } from "@/lib/auth/session";
+import { createSession, SESSION_COOKIE } from "@/lib/auth/session";
 import { createStaffKeyUser, staffCredentialsMatch } from "@/lib/auth/staff-access";
 import { isStaffAccessConfigured } from "@/lib/env";
 import { clientKey, rateLimit } from "@/lib/server/rate-limit";
 import { isSafeRelativePath } from "@/lib/utils";
 
+const SESSION_MAX_AGE = 60 * 60 * 24 * 14;
+
 function nextPath(value: string | null) {
   return isSafeRelativePath(value) ? value : "/admin";
 }
 
-function sameOrigin(request: NextRequest, pathname: string, search: Record<string, string> = {}) {
-  const url = request.nextUrl.clone();
-  url.pathname = pathname;
-  url.search = "";
-  for (const [key, value] of Object.entries(search)) {
-    url.searchParams.set(key, value);
-  }
-  return url;
+function relativeDestination(next: string) {
+  const path = next.startsWith("/admin") ? next : "/admin";
+  const pathname = path.split("?")[0] || "/admin";
+  const search = path.includes("?") ? path.slice(path.indexOf("?")) : "";
+  return `${pathname}${search}`;
 }
 
-function loginRedirect(request: NextRequest, code: string, next: string) {
-  const response = NextResponse.redirect(sameOrigin(request, "/login", { next, error: code }), 303);
+function loginRedirect(code: string, next: string) {
+  const destination = relativeDestination(next);
+  const response = NextResponse.redirect(
+    `/login?next=${encodeURIComponent(destination)}&error=${encodeURIComponent(code)}`,
+    303,
+  );
   response.headers.set("Cache-Control", "no-store");
   return response;
 }
@@ -28,14 +31,14 @@ function loginRedirect(request: NextRequest, code: string, next: string) {
 export async function POST(request: NextRequest) {
   const formData = await request.formData();
   const next = nextPath(String(formData.get("next") || ""));
-  const destination = next.startsWith("/admin") ? next : "/admin";
+  const destination = relativeDestination(next);
 
   if (!rateLimit(`staff-login:${clientKey(request)}`, 5, 15 * 60_000)) {
-    return loginRedirect(request, "staff-rate", destination);
+    return loginRedirect("staff-rate", destination);
   }
 
   if (!isStaffAccessConfigured()) {
-    return loginRedirect(request, "staff-off", destination);
+    return loginRedirect("staff-off", destination);
   }
 
   const matched = await staffCredentialsMatch(
@@ -43,12 +46,27 @@ export async function POST(request: NextRequest) {
     String(formData.get("password") || formData.get("code") || ""),
   );
   if (!matched) {
-    return loginRedirect(request, "staff-invalid", destination);
+    return loginRedirect("staff-invalid", destination);
   }
 
-  const url = sameOrigin(request, destination.split("?")[0] || "/admin");
-  if (destination.includes("?")) {
-    url.search = destination.slice(destination.indexOf("?"));
-  }
-  return sessionRedirect(url, createStaffKeyUser());
+  // Relative Location keeps the browser on the custom domain the user posted to
+  // (rogueroleplay.co.uk), instead of risking a host mismatch.
+  const response = NextResponse.redirect(destination, 303);
+  const token = await createSession(createStaffKeyUser());
+  const host = (request.headers.get("x-forwarded-host") || request.headers.get("host") || "")
+    .split(",")[0]
+    ?.trim()
+    .toLowerCase();
+  const hostname = host.split(":")[0] || "";
+  const localHost =
+    hostname === "localhost" || hostname === "127.0.0.1" || hostname.endsWith(".local");
+  response.cookies.set(SESSION_COOKIE, token, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: !localHost,
+    path: "/",
+    maxAge: SESSION_MAX_AGE,
+  });
+  response.headers.set("Cache-Control", "no-store");
+  return response;
 }

@@ -32,11 +32,34 @@ export function formatUkDateTime(value: string | Date): string {
   }).format(date);
 }
 
+function stripTrailingSlash(value: string) {
+  return value.replace(/\/$/, "");
+}
+
+function isLocalSiteUrl(value: string) {
+  return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(value);
+}
+
 export function getSiteUrl(): string {
-  return (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(
-    /\/$/,
-    "",
-  );
+  const configured = stripTrailingSlash((process.env.NEXT_PUBLIC_SITE_URL || "").trim());
+  if (configured && !isLocalSiteUrl(configured)) {
+    return configured;
+  }
+
+  // Vercel builds sometimes keep a localhost NEXT_PUBLIC_SITE_URL. Prefer the
+  // real deployment host so cookies, canonical URLs and origin checks stay valid.
+  const vercelHost = (
+    process.env.VERCEL_PROJECT_PRODUCTION_URL ||
+    process.env.VERCEL_URL ||
+    ""
+  )
+    .trim()
+    .replace(/^https?:\/\//i, "");
+  if (vercelHost) {
+    return `https://${stripTrailingSlash(vercelHost)}`;
+  }
+
+  return configured || "http://localhost:3000";
 }
 
 export function absoluteUrl(path = "/"): string {

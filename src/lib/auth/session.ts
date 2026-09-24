@@ -35,7 +35,9 @@ async function cookieSecure(requestUrl?: string): Promise<boolean> {
       if (isLocalHostname(parsed.hostname)) {
         return false;
       }
-      return parsed.protocol === "https:";
+      if (parsed.protocol === "https:") {
+        return true;
+      }
     } catch {
       // Fall through to request headers.
     }
@@ -51,6 +53,10 @@ async function cookieSecure(requestUrl?: string): Promise<boolean> {
     ?.trim();
   if (host && isLocalHostname(host)) {
     return false;
+  }
+
+  if (process.env.VERCEL === "1") {
+    return true;
   }
 
   const proto = headerStore.get("x-forwarded-proto")?.split(",")[0]?.trim();

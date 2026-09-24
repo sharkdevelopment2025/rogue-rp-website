@@ -22,11 +22,26 @@ export function resolveDiscordInvite(value?: string | null): string {
   return raw;
 }
 
+function resolvePublicSiteUrl() {
+  const configured = (process.env.NEXT_PUBLIC_SITE_URL || "").trim().replace(/\/$/, "");
+  if (configured && !/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(configured)) {
+    return configured;
+  }
+  const vercelHost = (
+    process.env.VERCEL_PROJECT_PRODUCTION_URL ||
+    process.env.VERCEL_URL ||
+    ""
+  )
+    .trim()
+    .replace(/^https?:\/\//i, "");
+  if (vercelHost) {
+    return `https://${vercelHost.replace(/\/$/, "")}`;
+  }
+  return configured || "http://localhost:3000";
+}
+
 export const publicEnv = {
-  siteUrl: (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(
-    /\/$/,
-    "",
-  ),
+  siteUrl: resolvePublicSiteUrl(),
   discordInvite: resolveDiscordInvite(process.env.NEXT_PUBLIC_DISCORD_INVITE),
   analyticsProvider: process.env.NEXT_PUBLIC_ANALYTICS_PROVIDER || "none",
   analyticsWriteKey: process.env.NEXT_PUBLIC_ANALYTICS_WRITE_KEY || "",
