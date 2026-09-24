@@ -23,7 +23,24 @@ async function secretKey(): Promise<Uint8Array> {
   return new Uint8Array(hash);
 }
 
+function isLocalHostname(hostname: string) {
+  const host = hostname.split(":")[0]?.toLowerCase() || "";
+  return host === "localhost" || host === "127.0.0.1" || host.endsWith(".local");
+}
+
 async function cookieSecure(requestUrl?: string): Promise<boolean> {
+  if (requestUrl) {
+    try {
+      const parsed = new URL(requestUrl);
+      if (isLocalHostname(parsed.hostname)) {
+        return false;
+      }
+      return parsed.protocol === "https:";
+    } catch {
+      // Fall through to request headers.
+    }
+  }
+
   const headerStore = await headers();
   const host = (
     headerStore.get("x-forwarded-host") ||
@@ -31,17 +48,8 @@ async function cookieSecure(requestUrl?: string): Promise<boolean> {
     ""
   )
     .split(",")[0]
-    ?.trim()
-    .toLowerCase();
-  const hostname = host.split(":")[0];
-  if (hostname === "localhost" || hostname === "127.0.0.1" || hostname.endsWith(".local")) {
-    return false;
-  }
-
-  if (requestUrl?.startsWith("https://")) {
-    return true;
-  }
-  if (requestUrl?.startsWith("http://")) {
+    ?.trim();
+  if (host && isLocalHostname(host)) {
     return false;
   }
 
@@ -98,10 +106,10 @@ export async function getSession(): Promise<SessionUser | null> {
   return readSessionToken(token);
 }
 
-export async function setSessionCookie(user: SessionUser): Promise<void> {
+export async function setSessionCookie(user: SessionUser, requestUrl?: string): Promise<void> {
   const jar = await cookies();
   const token = await createSession(user);
-  jar.set(SESSION_COOKIE, token, await cookieOptions(SESSION_MAX_AGE));
+  jar.set(SESSION_COOKIE, token, await cookieOptions(SESSION_MAX_AGE, requestUrl));
 }
 
 export async function sessionRedirect(url: URL, user: SessionUser, status = 303) {
@@ -115,6 +123,7 @@ export async function sessionRedirect(url: URL, user: SessionUser, status = 303)
 export async function clearSessionRedirect(url: URL, status = 303) {
   const response = NextResponse.redirect(url, status);
   response.cookies.set(SESSION_COOKIE, "", await cookieOptions(0, url.toString()));
+  response.headers.set("Cache-Control", "no-store");
   return response;
 }
 

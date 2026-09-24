@@ -9,7 +9,7 @@ function nextPath(value: string | null) {
   return isSafeRelativePath(value) ? value : "/admin";
 }
 
-function sameOrigin(request: NextRequest, pathname: string, search: Record<string, string>) {
+function sameOrigin(request: NextRequest, pathname: string, search: Record<string, string> = {}) {
   const url = request.nextUrl.clone();
   url.pathname = pathname;
   url.search = "";
@@ -20,8 +20,7 @@ function sameOrigin(request: NextRequest, pathname: string, search: Record<strin
 }
 
 function loginRedirect(request: NextRequest, code: string, next: string) {
-  const url = sameOrigin(request, "/login", { next, error: code });
-  const response = NextResponse.redirect(url, 303);
+  const response = NextResponse.redirect(sameOrigin(request, "/login", { next, error: code }), 303);
   response.headers.set("Cache-Control", "no-store");
   return response;
 }
@@ -47,8 +46,9 @@ export async function POST(request: NextRequest) {
     return loginRedirect(request, "staff-invalid", destination);
   }
 
-  const url = request.nextUrl.clone();
-  url.pathname = destination.split("?")[0] || "/admin";
-  url.search = destination.includes("?") ? destination.slice(destination.indexOf("?")) : "";
+  const url = sameOrigin(request, destination.split("?")[0] || "/admin");
+  if (destination.includes("?")) {
+    url.search = destination.slice(destination.indexOf("?"));
+  }
   return sessionRedirect(url, createStaffKeyUser());
 }
